@@ -1,27 +1,25 @@
-import os
+
 import pandas as pd
 import dash
 import numpy as np
-from dash import dcc, html, dash_table, callback_context
+from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import dash_bootstrap_components as dbc
 import requests
 import json
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
 import sys
 sys.path.append('data/')
 
+# Jobs Dataset
 df = pd.read_csv('data/li_jobs_emb.zip')
 
 # Create a dash application
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.JOURNAL]) #, assets_folder=assets_path
 
 ###########
-url = 'http://127.0.0.1:8000/single_embeddings'
-
+# Access model's container
+url = 'http://model_api:8000/single_embeddings'
 ###########
 
 
@@ -41,7 +39,7 @@ header = html.Div([
 
 
 input_groups = dbc.Container([html.Div(
-    [   html.Br(),
+    [html.Br(),
         dbc.InputGroup(
             [dbc.InputGroupText("@"), dbc.Input(placeholder="Username", id="username_input")],
             className="mb-3",
@@ -60,16 +58,14 @@ input_groups = dbc.Container([html.Div(
             ],
             className="mb-3",
         ),
-
     ]
-)]) #'#5f8dab' , style = {'background-color': '#5f8dab' }
+)])
 
 def get_user_rec(emb, num_rec=5):
     emb = np.asarray(json.loads(emb))
 
     job_emb = np.asarray(df['emb'].apply(lambda x: json.loads(x)).to_list())
     top_jobs = (-1 * (emb @ job_emb.T)).argsort(axis=1)[:, :num_rec]
-    #print(f'Max scores: {(emb @ job_emb.T)[:,top_jobs]}')
     return df.iloc[top_jobs[0]]
 
 def get_jumbotron(title, text, location):
@@ -90,25 +86,19 @@ def get_jumbotron(title, text, location):
 
 
 first_jumbotron = dbc.Col(
-    html.Div(
-        [],
-        #className="h-100 p-5 text-white bg-light rounded-3",
+    html.Div([],
     ), id="first_jumbotron",
     md=4,
 )
 
 second_jumbotron = dbc.Col(
-    html.Div(
-        [],
-        #className="h-100 p-5 bg-light border rounded-3",
+    html.Div([],
     ), id="second_jumbotron",
     md=4,
 )
 
 third_jumbotron = dbc.Col(
-    html.Div(
-        [],
-        #className="h-100 p-5 bg-light border rounded-3",
+    html.Div([],
     ), id="third_jumbotron",
     md=4,
 )
@@ -133,9 +123,7 @@ app.layout = html.Div(children=[
     jumbotron,
     html.Br(),
     html.Br()
-
-]#, style = {'background-color': '#5f8dab'}
-)
+])
 
 @app.callback([Output(component_id='first_jumbotron', component_property='children'),
                 Output(component_id='second_jumbotron', component_property='children'),
@@ -168,4 +156,4 @@ def get_user_emb(n, username, title, desc):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host="0.0.0.0", port=8050, debug=True)

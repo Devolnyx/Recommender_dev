@@ -108,7 +108,7 @@ def run_model():
     uvicorn.run("model_api:app")
 
 if __name__ == "__main__":
-    uvicorn.run("model_api:app")
+    uvicorn.run("model_api:app", host="0.0.0.0", port=8000)
 
     # url = 'http://127.0.0.1:8000/predict'
     # myobj = {'img': f"data:image/jpeg;base64, {base64.b64encode(frame).decode()}"}
