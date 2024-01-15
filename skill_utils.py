@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm, trange
 import re
+import multiprocessing as mp
 from multiprocessing import Pool
 
 import nltk
@@ -74,7 +75,7 @@ def extract_skills(record: str):
 
     return person_skills
 
-def parallel(function, arguments, n_threads=4):
+def parallel(function, arguments, n_threads=mp.cpu_count()//2):
     outputs = []
     with Pool(n_threads) as p:
         outputs = list(tqdm(p.imap(function, arguments), total=len(arguments)))
