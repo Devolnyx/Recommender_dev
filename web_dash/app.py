@@ -20,6 +20,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.JOURNAL]) #, assets_f
 ###########
 # Access model's container
 url = 'http://model_api:8000/single_embeddings'
+url = 'http://localhost:8000/single_embeddings'
 ###########
 
 
@@ -61,7 +62,7 @@ input_groups = dbc.Container([html.Div(
     ]
 )])
 
-def get_user_rec(emb, num_rec=5):
+def get_user_rec(emb, num_rec=10):
     emb = np.asarray(json.loads(emb))
 
     job_emb = np.asarray(df['emb'].apply(lambda x: json.loads(x)).to_list())
@@ -85,6 +86,26 @@ def get_jumbotron(title, text, location):
     return jt
 
 
+def get_jumbotron(title, text, location):
+    jt = html.Div([
+        dbc.CardHeader(f'📍 {location}'),
+
+        dbc.CardBody(
+            [
+                html.H5(f"{title}", className="card-title"),
+                html.P(
+                    text,
+                    className="card-text",
+                ),
+            ], style={'height': '250px', 'overflow':'auto'}
+        )
+
+        #dbc.Button("Example Button", color="secondary", outline=True),
+    ])
+
+    return dbc.Card(jt, color="dark", outline=True, style = {"box-shadow": "0 0 10px rgba(0,0,0,0.5)"})
+
+
 first_jumbotron = dbc.Col(
     html.Div([],
     ), id="first_jumbotron",
@@ -103,11 +124,42 @@ third_jumbotron = dbc.Col(
     md=4,
 )
 
+fourth_jumbotron = dbc.Col(
+    html.Div([],
+    ), id="fourth_jumbotron",
+    md=4,
+)
+fifth_jumbotron = dbc.Col(
+    html.Div([],
+    ), id="fifth_jumbotron",
+    md=4,
+)
+sixth_jumbotron = dbc.Col(
+    html.Div([],
+    ), id="sixth_jumbotron",
+    md=4,
+)
+
 jumbotron = dbc.Container(
     dcc.Loading(type="circle", children = dbc.Row(
-        [first_jumbotron, second_jumbotron, third_jumbotron],
+        [first_jumbotron, second_jumbotron, third_jumbotron, fourth_jumbotron, fifth_jumbotron, sixth_jumbotron],
     className="align-items-md-stretch",
 ), className="h-100", style={'max_height': '60%'}))
+
+jumbotron = dbc.Container(
+    dcc.Loading(type="circle", children = [
+                        dbc.Row(
+                                [first_jumbotron, second_jumbotron, third_jumbotron],
+                            className="align-items-md-stretch",
+                        ),
+                        html.Br(),
+                        dbc.Row(
+                                [fourth_jumbotron, fifth_jumbotron, sixth_jumbotron],
+                            className="align-items-md-stretch",
+                        )],
+                className="h-100", style={'max_height': '60%'}))
+
+
 
 submit_button = dbc.Container(
     dbc.Button("Submit", color="primary", id='update_output', outline=True,
@@ -127,7 +179,10 @@ app.layout = html.Div(children=[
 
 @app.callback([Output(component_id='first_jumbotron', component_property='children'),
                 Output(component_id='second_jumbotron', component_property='children'),
-                Output(component_id='third_jumbotron', component_property='children')
+                Output(component_id='third_jumbotron', component_property='children'),
+               Output(component_id='fourth_jumbotron', component_property='children'),
+               Output(component_id='fifth_jumbotron', component_property='children'),
+               Output(component_id='sixth_jumbotron', component_property='children')
                ],
               [Input("memory", "data")], prevent_initial_call=True)
 def update(emb):
@@ -137,8 +192,11 @@ def update(emb):
     j1 = get_jumbotron(dfs.iloc[0].title, dfs.iloc[0].description, dfs.iloc[0].location)
     j2 = get_jumbotron(dfs.iloc[1].title, dfs.iloc[1].description, dfs.iloc[1].location)
     j3 = get_jumbotron(dfs.iloc[2].title, dfs.iloc[2].description, dfs.iloc[2].location)
+    j4 = get_jumbotron(dfs.iloc[3].title, dfs.iloc[3].description, dfs.iloc[3].location)
+    j5 = get_jumbotron(dfs.iloc[4].title, dfs.iloc[4].description, dfs.iloc[4].location)
+    j6 = get_jumbotron(dfs.iloc[5].title, dfs.iloc[5].description, dfs.iloc[5].location)
 
-    return [j1, j2, j3]
+    return [j1, j2, j3, j4, j5, j6]
 
 @app.callback(
     [Output("memory", "data")],

@@ -5,7 +5,7 @@ import os
 
 import torch
 import json
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
 import uvicorn
 
@@ -102,6 +102,35 @@ async def get_preds(user_request: BatchRequestIn):
     emb = get_batch_embeddings(data=[title, desc, skills], weights=[0.5, 0.5, 0.])
     embeds = [json.dumps(x.tolist()) for x in emb]
     return {"emb": embeds}
+
+
+from PyPDF2 import PdfReader
+from io import BytesIO
+
+@app.post("/upload/")
+async def create_upload_file(file: UploadFile):
+    if not file:
+        return {"message": "No upload file sent"}
+    else:
+        print(type(file))
+        pdf_file = BytesIO(file.file.read())
+        reader = PdfReader(pdf_file)
+        page = reader.pages[0]
+        text = page.extract_text()
+        #return {"text": text}
+        #return {"filename": file.filename}
+
+        emb = get_single_embeddings(data=[text[:100], text, ' '], weights=[0.5, 0.5, 0.])
+        embeds = json.dumps(emb.tolist())
+        return {"emb": embeds}
+
+
+
+
+# url = 'http://127.0.0.1:8000/upload'
+# file = {'file': open('cv VYACHESLAV MUZHICHENKO.pdf', 'rb')}
+# resp = requests.post(url=url, files=file)
+# print(resp.json())
 
 def run_model():
     #if __name__ == "__main__":
